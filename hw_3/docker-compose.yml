@@ -10,11 +10,14 @@ services:
       context: ./auth
       dockerfile: Dockerfile
     command: bash -c "uvicorn app.main:app --host 0.0.0.0 --port 8001"
+
+    volumes:
+      - ./auth:/auth/db
   
     ports:
       - 8001:8001
 
-  neural_engine:
+  nengine:
     restart: always
     mem_limit: 4G
     container_name: neural_engine
@@ -22,7 +25,7 @@ services:
     build: 
       context: ./neural_engine
       dockerfile: Dockerfile
-    command: bash -c "uvicorn app.main:app --host 0.0.0.0 --port 8002"
+    command: bash -c "uvicorn main:app --host 0.0.0.0 --port 8002"
   
     ports:
       - 8002:8002
@@ -38,11 +41,11 @@ services:
     command: bash -c "uvicorn app.main:app --host 0.0.0.0 --port 8000"
 
     environment:
-      - MONGO_LOGIN=${MONGO_LOGIN}
+      - AUTH_IP=${AUTH_IP}
+      - ML_IP=${ML_IP}
 
     ports:
       - 8000:8000
     depends_on:
       - auth
-
-  
+      - nengine

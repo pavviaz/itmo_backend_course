@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from model_loader import get_sentiment
 
 
-router = APIRouter(prefix="/ml", tags=["ml"])
+router = APIRouter(tags=["ml"])
 
 
 @router.get("/classify")

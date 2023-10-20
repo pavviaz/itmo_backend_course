@@ -1,14 +1,14 @@
 import os
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, status
 from fastapi.responses import JSONResponse
 from fastapi import status
 import aiohttp
 
-from app.contracts import UserRegister, UserLogin, Token
+from app.contracts import UserRegister, UserLogin, UserRequest
 
 
-router = APIRouter(prefix="/service", tags=["service"])
+router = APIRouter(tags=["service"])
 
 
 @router.post("/register")
@@ -24,11 +24,14 @@ async def register(user_data: UserRegister):
         JSONResponse: A response with a status code of
         201 indicating that the user has been created.
     """
+    user_data_json = user_data.model_dump()
     async with aiohttp.ClientSession() as session:
-        async with session.post(f"{os.getenv('AUTH_IP', 'http://localhost:8001/')}auth/register", json=user_data) as resp:
-            # return await resp
+        async with session.post(
+            f"{os.getenv('AUTH_IP', 'http://0.0.0.0:8001')}/register",
+            json=user_data_json,
+        ) as resp:
             responce = await resp.json()
-    
+
     return responce
 
 
@@ -44,20 +47,19 @@ async def login(user_data: UserLogin):
     Returns:
         dict: A dictionary containing the access token.
     """
+    user_data_json = user_data.model_dump()
     async with aiohttp.ClientSession() as session:
-        async with session.post(f"{os.getenv('AUTH_IP')}/login", json=user_data) as resp:
-            # return await resp
+        async with session.post(
+            f"{os.getenv('AUTH_IP', 'http://0.0.0.0:8001')}/login",
+            json=user_data_json,
+        ) as resp:
             responce = await resp.json()
-    
+
     return responce
 
-    return {"access_token": token}
 
-
-@router.post("/profile")
-async def get_user_data(
-    token: Token, session: AsyncSession = Depends(get_async_session)
-):
+@router.post("/classify")
+async def get_user_data(user_data: UserRequest):
     """
     Retrieves user data based on a provided access token.
 
@@ -69,7 +71,22 @@ async def get_user_data(
     Returns:
         The user data retrieved based on the provided access token.
     """
-    username = validate_access_token(token=token.token)
-    user = await get_user(session=session, username=username)
+    user_data_json = user_data.model_dump()
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+            f"{os.getenv('AUTH_IP', 'http://0.0.0.0:8001')}/profile",
+            json=user_data_json,
+        ) as resp:
+            responce_code = resp.status
 
-    return user
+    if responce_code != status.HTTP_200_OK:
+        return JSONResponse(status_code=responce_code, content={"msg": "Bad token"})
+    
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+            f"{os.getenv('ML_IP', 'http://0.0.0.0:8002')}/classify?user_q={user_data.text}",
+        ) as resp:
+            responce = await resp.json()
+    
+    return responce
+

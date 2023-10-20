@@ -4,12 +4,6 @@ from pydantic import (
 )
 
 
-class Token(BaseModel):
-    """It's better to send token via cookies or Bearer"""
-
-    token: str
-
-
 class UserLogin(BaseModel):
     """Contract for user login"""
 
@@ -24,3 +18,12 @@ class UserRegister(BaseModel):
     password_1: str
     password_2: str
     email: EmailStr
+
+
+class UserRequest(BaseModel):
+    """Contract for user registration, 
+    It's better to send token via cookies or Bearer
+    """
+
+    text: str
+    token: str

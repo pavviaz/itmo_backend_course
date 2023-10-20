@@ -1,8 +1,23 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 import uvicorn
 
 from app.aservice.router import router as router_auth
 from app.database import Base, engine
+from app.aservice.models import User
+
+
+@asynccontextmanager
+async def init_tables(app: FastAPI):
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
+    except Exception as e:
+        print(e)
+
+    yield
 
 
 app = FastAPI(
@@ -11,18 +26,10 @@ app = FastAPI(
     version="0.0.1",
     docs_url="/docs",
     redoc_url="/docs/redoc",
+    lifespan=init_tables
 )
 
 app.include_router(router_auth)
-
-
-@app.on_event("startup")
-async def init_tables():
-    try:
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-    except Exception:
-        pass
 
 
 if __name__ == "__main__":
