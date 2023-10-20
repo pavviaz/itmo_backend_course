@@ -14,7 +14,7 @@ services:
     ports:
       - 8001:8001
 
-  neural_engine:
+  nengine:
     restart: always
     mem_limit: 4G
     container_name: neural_engine
@@ -22,7 +22,7 @@ services:
     build: 
       context: ./neural_engine
       dockerfile: Dockerfile
-    command: bash -c "uvicorn app.main:app --host 0.0.0.0 --port 8002"
+    command: bash -c "uvicorn main:app --host 0.0.0.0 --port 8002"
   
     ports:
       - 8002:8002

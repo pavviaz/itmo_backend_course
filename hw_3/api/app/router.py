@@ -81,12 +81,11 @@ async def get_user_data(user_data: UserRequest):
 
     if responce_code != status.HTTP_200_OK:
         return JSONResponse(status_code=responce_code, content={"msg": "Bad token"})
-    
+
     async with aiohttp.ClientSession() as session:
         async with session.get(
             f"{os.getenv('ML_IP', 'http://0.0.0.0:8002')}/classify?user_q={user_data.text}",
         ) as resp:
             responce = await resp.json()
-    
-    return responce
 
+    return responce

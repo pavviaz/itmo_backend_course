@@ -26,7 +26,7 @@ app = FastAPI(
     version="0.0.1",
     docs_url="/docs",
     redoc_url="/docs/redoc",
-    lifespan=init_tables
+    lifespan=init_tables,
 )
 
 app.include_router(router_auth)

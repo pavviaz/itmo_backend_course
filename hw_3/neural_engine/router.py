@@ -7,5 +7,5 @@ router = APIRouter(tags=["ml"])
 
 
 @router.get("/classify")
-async def classify(user_q: str):    
+async def classify(user_q: str):
     return {"class": get_sentiment(user_q)}
