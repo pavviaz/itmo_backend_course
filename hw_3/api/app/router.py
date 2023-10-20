@@ -38,7 +38,7 @@ async def register(user_data: UserRegister):
 @router.post("/login")
 async def login(user_data: UserLogin):
     """
-    Authenticates a user and generates an access token.
+    Authenticates a user and generates an access token via 'auth' service.
 
     Args:
         user_data (UserLogin): A UserLogin object containing
@@ -59,17 +59,17 @@ async def login(user_data: UserLogin):
 
 
 @router.post("/classify")
-async def get_user_data(user_data: UserRequest):
+async def classify(user_data: UserRequest):
     """
-    Retrieves user data based on a provided access token.
+    Classify user data by sending it to two different endpoints ('auth' and 'neural_engine') 
+    and returning the response from the second endpoint.
 
     Args:
-        token (Token): The access token provided by the client.
-        session (AsyncSession, optional): The asynchronous database session.
-        Defaults to the result of calling the `get_async_session` function.
+        user_data (UserRequest): An instance of the UserRequest class 
+        that contains the user's text and token.
 
     Returns:
-        The user data retrieved based on the provided access token.
+        The response from the second endpoint.
     """
     user_data_json = user_data.model_dump()
     async with aiohttp.ClientSession() as session:

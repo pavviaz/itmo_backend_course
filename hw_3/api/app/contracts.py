@@ -21,7 +21,7 @@ class UserRegister(BaseModel):
 
 
 class UserRequest(BaseModel):
-    """Contract for user registration,
+    """Contract for user request,
     It's better to send token via cookies or Bearer
     """
 
