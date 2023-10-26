@@ -17,7 +17,6 @@ celery.conf.result_backend = os.getenv("CELERY_RESULT_BACKEND")
 model_checkpoint = "cointegrated/rubert-tiny-sentiment-balanced"
 tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
 model = AutoModelForSequenceClassification.from_pretrained(model_checkpoint)
-model = AutoModelForSequenceClassification.from_pretrained(model_checkpoint)
 
 
 @celery.task(name="download_doi")
