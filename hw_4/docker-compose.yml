@@ -1,0 +1,78 @@
+version: "2.3"
+
+services:
+  redis:
+    restart: "no"
+    mem_limit: 1G
+    container_name: redis_backend
+
+    image: redis:6.2-alpine
+    
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_PORT_NUMBER=6379
+    ports:
+      - '6379:6379'
+    
+  rabbitmq:
+    restart: "no"
+    mem_limit: 2G
+    container_name: rabbitmq_broker
+
+    image: "rabbitmq:3-management"
+
+    ports:
+      - '5672:5672'  # Порт для AMQP
+      - '15672:15672'  # Порт для RabbitMQ Management
+
+    volumes:
+      - ./rabbitmq-data:/var/lib/rabbitmq/mnesia
+
+    environment:
+      RABBITMQ_ERLANG_COOKIE: ${RABBITMQ_ERLANG_COOKIE}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_LOGIN}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWD}
+
+  api:
+    restart: "no"
+    mem_limit: 4G
+    container_name: parser
+
+    build: 
+      context: ./api
+      dockerfile: Dockerfile
+    command: bash -c "uvicorn app.main:app --host 0.0.0.0 --port 8000"
+
+    environment:
+      - CELERY_BROKER_URL=${RABBITMQ_IP}
+      - CELERY_RESULT_BACKEND=${REDIS_IP}
+
+    ports:
+      - 8000:8000
+    depends_on:
+      - worker
+      - redis
+      - rabbitmq
+
+  worker:
+    restart: "no"
+    mem_limit: 4G
+    container_name: worker
+
+    build: 
+      context: ./dd_service
+      dockerfile: Dockerfile
+    command: bash -c "celery -A celery_services worker -l info -E -c 1 --logfile celery.log"
+
+    environment:
+      - DOI_DOWNLOAD_PATH=${DOI_DOWNLOAD_PATH}
+      - CELERY_BROKER_URL=${RABBITMQ_IP}
+      - CELERY_RESULT_BACKEND=${REDIS_IP}
+
+    depends_on:
+      - redis
+      - rabbitmq
+
+    volumes:
+      - ./dd_service/${DOI_DOWNLOAD_PATH}:/dd_service/${DOI_DOWNLOAD_PATH}
+      

@@ -1,0 +1,5 @@
+celery==5.3.4
+redis
+scidownl
+torch==1.13.1
+transformers

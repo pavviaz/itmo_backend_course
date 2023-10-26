@@ -1,0 +1,7 @@
+fastapi
+celery
+uvicorn[standard]==0.23.2
+redis
+pymongo
+motor
+scidownl
