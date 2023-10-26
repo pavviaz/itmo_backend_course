@@ -1,0 +1,29 @@
+version: "2.3"
+
+services:
+  auth:
+    restart: always
+    mem_limit: 4G
+    container_name: auth_service
+
+    build: 
+      context: ./auth
+      dockerfile: Dockerfile
+    command: bash -c "uvicorn app.main:app --host 0.0.0.0 --port 8001"
+  
+    ports:
+      - 8001:8001
+
+  nengine:
+    restart: always
+    mem_limit: 4G
+    container_name: neural_engine
+
+    build: 
+      context: ./neural_engine
+      dockerfile: Dockerfile
+    command: bash -c "uvicorn main:app --host 0.0.0.0 --port 8002"
+  
+    ports:
+      - 8002:8002
+  
